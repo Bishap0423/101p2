@@ -24,10 +24,35 @@ typedef struct VisionFrame {
 	struct VisionFrame *prev;
 } VisionFrame;
 
+loadfile();
+add_frame();
+print_all();
+filter();
+sort_frame();
+search();
+summary();
+check_memory();
+void clear_all();
 
 
 int main(){
+	do{
+		int choice = get_menu();
+		switch(choice){
+		case 1:{loadfile();break;}
+		case 2:{add_frame();break;}
+		case 3:{print_all();break;}
+		case 4:{filter();break;}
+		case 5:{sort_frame();break;}
+		case 6:{search();break;}
+		case 7:{summary();break;}
+		case 8:{check_memory();break;}
+		case 9:{clear_all();break;}
+		}
+	}while(choice != 0);
 
+	clear_all();
+	exit();
 	
 }
 
