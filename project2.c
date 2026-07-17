@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
 typedef struct Target {
 	char category[20];
@@ -21,25 +22,32 @@ typedef struct FrameData{
 typedef struct VisionFrame {
 	struct FrameData data;
 	struct VisionFrame *next;
-	struct VisionFrame *prev;
 } VisionFrame;
 
-loadfile();
-add_frame();
-print_all();
-filter();
-sort_frame();
-search();
-summary();
-check_memory();
-void clear_all();
+//other functions
+
+int get_menu();
+
+//menu
+VisionFrame *loadfile();
+void add_frame();
+void print_all();
+void filter();
+void sort_frame();
+void search();
+void summary();
+void check_memory();
+void clear_all(VisionFrame **head);
+void exit_it(VisionFrame **head);
 
 
 int main(){
-	do{
+	bool loop = true;	
+	VisionFrame *head = NULL;
+	while(loop == true){
 		int choice = get_menu();
 		switch(choice){
-		case 1:{loadfile();break;}
+		case 1:{head = loadfile();break;}
 		case 2:{add_frame();break;}
 		case 3:{print_all();break;}
 		case 4:{filter();break;}
@@ -47,12 +55,12 @@ int main(){
 		case 6:{search();break;}
 		case 7:{summary();break;}
 		case 8:{check_memory();break;}
-		case 9:{clear_all();break;}
+		case 9:{clear_all(&head);break;}
+		case 0:{exit_it(&head); loop = false; break;}
+		default:{printf("Invalid choice\n");}
 		}
-	}while(choice != 0);
 
-	clear_all();
-	exit();
+	}
 	
 }
 
@@ -67,30 +75,34 @@ VisionFrame *create_node(FrameData value){
 	}
 
 	new_node -> data = value;
-	new_node -> prev = NULL;
 	new_node -> next = NULL;
 
 	return new_node;
 }
 
 int delete_node(VisionFrame **head, FrameData value){
-	if (head == NULL || *head == NULL) {return 0;}
-	VisionFrame *current = *head;
+	if (head == NULL || *head == NULL) {
+		return 0;
+	}
 
-	while (current != NULL && current->data.frame_id != value.frame_id) {
+	VisionFrame *current = *head;
+	VisionFrame *previous = NULL;
+
+	while (current != NULL &&
+	       current->data.frame_id != value.frame_id) {
+		previous = current;
 		current = current->next;
 	}
 
-	if (current == NULL) {return 0;}
-
-	if (current->prev != NULL) {
-		current->prev->next = current->next;
-	}else{
-		*head = current->next;
+	if (current == NULL) {
+		return 0;
 	}
 
-	if (current->next != NULL) {
-		current->next->prev = current->prev;
+	if (previous == NULL) {
+		*head = current->next;
+	}
+	else {
+		previous->next = current->next;
 	}
 
 	free(current);
@@ -111,7 +123,6 @@ void append_node(VisionFrame **head, FrameData value){
 	}
 
 	last -> next = new_node;
-	new_node -> prev = last;
 }
 
 //only print frame_id this version	
@@ -126,12 +137,50 @@ void print_list(const VisionFrame *head){
 	printf("->NULL\n");
 }
 
-void free_list(VisionFrame *head){
-	VisionFrame *current = head;
+void free_list(VisionFrame **head){
+	if (head == NULL){ return; }
+	VisionFrame *current = *head;
 
 	while(current != NULL){
 		VisionFrame *next_node = current -> next;
 		free(current);
 		current = next_node;
 	}
+
+	*head = NULL;
+}
+
+//other function
+
+int get_menu(void){
+	int choice;
+	printf(
+	"========================================\n"
+	"    ROBOT VISION LOG SYSTEM\n"
+	"========================================\n"
+	"1. Load Data from File\n"
+	"2. Add Single Frame Manually\n"
+	"3. Print All Logs (Screen & File)\n"
+	"4. Filter Low Confidence Frames (< 0.5)\n"
+	"5. Sort Frames by Confidence (Desc)\n"
+	"6. Search by Category Keyword\n"
+	"7. Show Statistics\n"
+	"8. Check Memory Usage\n"
+	"9. Clear All Data\n"
+	"0. Exit\n"
+	"========================================\n"
+	"Enter choice: "	
+	);
+	scanf("%d", &choice);
+	return choice;
+}
+
+//menu function
+void clear_all(VisionFrame **head){
+	free_list(head);
+	printf("[+] All data cleared and memory freed.");
+}
+void exit_it(VisionFrame **head){
+	clear_all(head);
+	printf("Exiting program. Goodbye!");
 }
