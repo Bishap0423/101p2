@@ -35,8 +35,8 @@ void print_all();
 void filter();
 void sort_frame();
 void search();
-void summary();
-void check_memory();
+void summary(const VisionFrame *head);
+void check_memory(const VisionFrame *head);
 void clear_all(VisionFrame **head);
 void exit_it(VisionFrame **head);
 
@@ -53,8 +53,8 @@ int main(){
 		case 4:{filter();break;}
 		case 5:{sort_frame();break;}
 		case 6:{search();break;}
-		case 7:{summary();break;}
-		case 8:{check_memory();break;}
+		case 7:{summary(head);break;}
+		case 8:{check_memory(head);break;}
 		case 9:{clear_all(&head);break;}
 		case 0:{exit_it(&head); loop = false; break;}
 		default:{printf("Invalid choice\n");}
@@ -184,3 +184,69 @@ void exit_it(VisionFrame **head){
 	clear_all(head);
 	printf("Exiting program. Goodbye!");
 }
+
+//fuction7 statistics
+void summary(const VisionFrame *head){
+    if (head == NULL){
+        printf("The list is empty.\n");
+        return;
+    }
+
+    int total_frames = 0;
+    int total_objects = 0;
+    double total_confidence = 0.0, average_confidence = 0.0;
+    int high_confidence_count = 0;
+
+    const VisionFrame *current = head;
+    while (current != NULL) {
+        total_frames++;
+        total_objects += current->data.target_count;
+        if (current->data.target_count > 0){
+            for (int i = 0; i < current->data.target_count; i++) {
+                total_confidence += current->data.targets[i].conf;
+                if (current->data.targets[i].conf > 0.8) {
+                    high_confidence_count++;
+                }
+            }
+        }
+        current = current->next;       
+    }
+    if (total_objects > 0) {
+        average_confidence = total_confidence / total_objects;
+    } 
+    else {
+        average_confidence = 0.0;
+    }
+    printf("--- Statistics Summary ---\n");
+    printf("%-25s : %d\n", "Total frames", total_frames);
+    printf("%-25s : %d\n", "Total objects detected", total_objects);
+    printf("%-25s : %.2f\n", "Global average confidence", average_confidence);
+    printf("%-25s : %d\n", "High confidence count", high_confidence_count);
+    printf("---------------------------\n");
+}
+
+//function8 memory usage monitor
+void check_memory(const VisionFrame *head){
+    if (head == NULL){
+        printf("The list is empty.\n");
+        return;
+    }
+
+    int active_nodes = 0;
+    int size_per_node = sizeof(VisionFrame);
+    int memory_used = 0;
+
+    const VisionFrame *current = head;
+    while (current != NULL) {
+        active_nodes++;
+        current = current->next;       
+    }
+
+    memory_used = active_nodes * size_per_node;
+    printf("--- Memory Monitor ---\n");
+    printf("%-18s : %d\n", "Active nodes", active_nodes);
+    printf("%-18s : %d bytes\n", "Size per Node", size_per_node);
+    printf("%-18s : %d bytes\n", "Total Heap Usage", memory_used);
+    printf("----------------------\n");
+}
+
